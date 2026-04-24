@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heliópolis — Rastreamento de Pacientes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+  :root {
+    --blue-50: #E6F1FB;
+    --blue-100: #B5D4F4;
+    --blue-600: #185FA5;
+    --blue-800: #0C447C;
+    --blue-900: #042C53;
+    --teal-50: #E1F5EE;
+    --teal-600: #0F6E56;
+    --teal-800: #085041;
+    --green-50: #EAF3DE;
+    --green-600: #3B6D11;
+    --amber-50: #FAEEDA;
+    --amber-600: #854F0B;
+    --coral-50: #FAECE7;
+    --coral-600: #993C1D;
+    --gray-50: #F1EFE8;
+    --gray-100: #D3D1C7;
+    --gray-600: #5F5E5A;
+    --gray-800: #444441;
+    --gray-900: #2C2C2A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #f4f6f9;
+    min-height: 100vh;
+    color: var(--gray-900);
+  }
+
+  /* ── NAVEGAÇÃO ── */
+  nav {
+    background: var(--blue-900);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.03em;
+    margin-right: 2.5rem;
+    white-space: nowrap;
+  }
+
+  .nav-brand span {
+    color: var(--blue-100);
+    font-weight: 400;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 0;
+    height: 100%;
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.65);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 1.1rem;
+    height: 100%;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .nav-btn.active {
+    color: #fff;
+    border-bottom-color: #5CB3F0;
+  }
+
+  .nav-btn:hover:not(.active) {
+    color: rgba(255,255,255,0.9);
+  }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* ── TELAS ── */
+  .screen { display: none; padding: 2rem; max-width: 680px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 0.5px solid #dde1e7;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1.1rem;
+  }
+
+  /* ── FORMULÁRIO ── */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+
+  label:first-of-type { margin-top: 0; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--gray-900);
+    background: #fafafa;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+    background: #fff;
+  }
+
+  /* ── BOTÕES ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 1.4rem;
+    height: 42px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity .15s, transform .1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--blue-600);
+    color: #fff;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-success {
+    background: var(--teal-600);
+    color: #fff;
+    width: 100%;
+    height: 52px;
+    font-size: 15px;
+    border-radius: 10px;
+    margin-top: 1rem;
+  }
+
+  .btn-success:hover { opacity: 0.88; }
+
+  .btn-outline {
+    background: none;
+    border: 1px solid #dde1e7;
+    color: var(--gray-600);
+    font-size: 13px;
+    height: 36px;
+    padding: 0 1rem;
+  }
+
+  .btn-outline:hover { background: var(--gray-50); }
+
+  .btn-full { width: 100%; }
+
+  /* ── QR CODE AREA ── */
+  #qr-result {
+    display: none;
+    margin-top: 1.5rem;
+  }
+
+  .qr-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  #qr-canvas {
+    flex-shrink: 0;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+  }
+
+  .qr-info {
+    flex: 1;
+  }
+
+  .prontuario-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-50);
+    color: var(--blue-800);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .patient-name-display {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+
+  .timestamp-badge {
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  .print-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── LEITOR (telas de etapa) ── */
+  .step-header {
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+  }
+
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .step-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+
+  .step-subtitle {
+    font-size: 14px;
+    color: var(--gray-600);
+  }
+
+  /* ── SCANNER ── */
+  .scanner-area {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 320px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .scanner-area video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .scan-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scan-frame {
+    width: 200px; height: 200px;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .scan-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px;
+    width: 30px; height: 30px;
+    border-top: 3px solid #5CB3F0;
+    border-left: 3px solid #5CB3F0;
+    border-radius: 4px 0 0 0;
+  }
+
+  .scan-frame::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 30px; height: 30px;
+    border-bottom: 3px solid #5CB3F0;
+    border-right: 3px solid #5CB3F0;
+    border-radius: 0 0 4px 0;
+  }
+
+  .scan-line {
+    position: absolute;
+    width: 180px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #5CB3F0, transparent);
+    animation: scanLine 2s ease-in-out infinite;
+  }
+
+  @keyframes scanLine {
+    0% { top: 10px; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 190px; opacity: 0; }
+  }
+
+  /* ── MANUAL INPUT ── */
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.25rem 0;
+    color: var(--gray-600);
+    font-size: 13px;
+  }
+
+  .or-divider::before, .or-divider::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: #dde1e7;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback-box {
+    display: none;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.25rem;
+    animation: fadeUp .25s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .feedback-box.success {
+    background: var(--teal-50);
+    border: 1px solid #9FE1CB;
+  }
+
+  .feedback-box.error {
+    background: var(--coral-50);
+    border: 1px solid #F5C4B3;
+  }
+
+  .feedback-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .feedback-box.success .feedback-title { color: var(--teal-800); }
+  .feedback-box.error .feedback-title { color: var(--coral-600); }
+
+  .feedback-detail {
+    font-size: 13px;
+  }
+
+  .feedback-box.success .feedback-detail { color: var(--teal-600); }
+  .feedback-box.error .feedback-detail { color: var(--coral-600); }
+
+  /* ── CONFIG ── */
+  .config-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .config-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .status-indicator.ok {
+    background: var(--green-50);
+    color: var(--green-600);
+  }
+
+  .status-indicator.warn {
+    background: var(--amber-50);
+    color: var(--amber-600);
+  }
+
+  .status-indicator .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  textarea {
+    width: 100%;
+    height: 72px;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gray-900);
+    background: #fafafa;
+    resize: vertical;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  textarea:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+  }
+
+  .info-box {
+    background: var(--blue-50);
+    border: 1px solid var(--blue-100);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--blue-800);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    nav, .print-actions, #qr-form { display: none !important; }
+    .screen { display: block !important; padding: 0; max-width: 100%; }
+    body { background: #fff; }
+    .card { border: none; padding: 0; box-shadow: none; }
+
+    .print-area {
+      display: block !important;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+  }
+
+  .print-area { display: none; }
+
+  /* ── RESPONSIVO MOBILE ── */
+  @media (max-width: 500px) {
+    nav { padding: 0 1rem; }
+    .screen { padding: 1rem; }
+    .qr-wrapper { flex-direction: column; align-items: center; }
+    .nav-brand { font-size: 13px; margin-right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVEGAÇÃO -->
+<nav>
+  <div class="nav-brand">Heliópolis <span>/ PA</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showScreen('cadastro')">
+      <span class="nav-dot" style="background:#5CB3F0"></span> Cadastro
+    </button>
+    <button class="nav-btn" onclick="showScreen('triagem')" style="--dot:#52D9A4">
+      <span class="nav-dot" style="background:#52D9A4"></span> Triagem
+    </button>
+    <button class="nav-btn" onclick="showScreen('medico')">
+      <span class="nav-dot" style="background:#F5A623"></span> Médico
+    </button>
+    <button class="nav-btn" onclick="showScreen('medicacao')">
+      <span class="nav-dot" style="background:#E8684A"></span> Medicação
+    </button>
+    <button class="nav-btn" onclick="showScreen('alta')">
+      <span class="nav-dot" style="background:#A67BF5"></span> Alta / Intern.
+    </button>
+    <button class="nav-btn" onclick="showScreen('config')">
+      <span class="nav-dot" style="background:#888"></span> Config
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     TELA 1 — CADASTRO
+═══════════════════════════════════════════ -->
+<div class="screen active" id="screen-cadastro">
+
+  <div class="card" id="qr-form">
+    <div class="card-title">Novo Paciente</div>
+
+    <label for="inp-prontuario">Número do prontuário</label>
+    <input type="number" id="inp-prontuario" placeholder="Ex: 1234567" min="1" oninput="clearQR()">
+
+    <label for="inp-nome">Nome do paciente</label>
+    <input type="text" id="inp-nome" placeholder="Ex: Maria Silva" oninput="clearQR()">
+
+    <div style="margin-top: 1.25rem; display: flex; gap: 8px;">
+      <button class="btn btn-primary" onclick="gerarQR()">Gerar QR Code</button>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div class="card" id="qr-result">
+    <div class="card-title">QR Code gerado</div>
+    <div class="qr-wrapper">
+      <div id="qr-canvas"></div>
+      <div class="qr-info">
+        <div class="prontuario-badge">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span id="display-prontuario">—</span>
+        </div>
+        <div class="patient-name-display" id="display-nome">—</div>
+        <div class="timestamp-badge" id="display-ts">—</div>
+        <div class="print-actions">
+          <button class="btn btn-outline" onclick="imprimirQR()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6V2h8v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="2" y="6" width="12" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 12v2h8v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Imprimir
+          </button>
+          <button class="btn btn-outline" onclick="novoQR()">Novo paciente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TELAS 2–5 — ETAPAS (geradas via JS)
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-triagem"></div>
+<div class="screen" id="screen-medico"></div>
+<div class="screen" id="screen-medicacao"></div>
+<div class="screen" id="screen-alta"></div>
+
+<!-- ═══════════════════════════════════════════
+     TELA 6 — CONFIGURAÇÃO
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-config">
+  <div class="card">
+    <div class="card-title">Integração com Google Sheets</div>
+
+    <div class="config-group">
+      <span class="config-label">Status da conexão</span>
+      <div id="conn-status" class="status-indicator warn">
+        <span class="dot"></span> URL do Apps Script não configurada
+      </div>
+    </div>
+
+    <div class="config-group">
+      <label for="inp-script-url" style="margin-top: 0;">URL do Google Apps Script</label>
+      <textarea id="inp-script-url" placeholder="https://script.google.com/macros/s/SEU_ID_AQUI/exec"></textarea>
+      <div class="info-box">
+        Cole aqui a URL gerada após publicar o Apps Script como "Web app". O passo a passo completo está no arquivo <strong>INSTRUCOES.md</strong> incluso.
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="salvarConfig()">Salvar configuração</button>
+    <button class="btn btn-outline" style="margin-left: 8px;" onclick="testarConexao()">Testar conexão</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Etapas configuradas</div>
+    <p style="font-size:14px; color: var(--gray-600); line-height: 1.7;">
+      As colunas serão criadas automaticamente na planilha na primeira vez que cada etapa for registrada.<br><br>
+      <strong>Ordem das colunas:</strong> Prontuário · Nome · Cadastro · Triagem · Médico · Medicação · Alta/Internação
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sobre</div>
+    <p style="font-size:13px; color: var(--gray-600); line-height:1.7;">
+      Sistema de rastreamento de tempo entre etapas no Pronto-Atendimento.<br>
+      Desenvolvido para o Hospital Heliópolis — gestão Albert Einstein.<br><br>
+      Versão 1.0 · Custo zero · Sem servidor
+    </p>
+  </div>
+</div>
+
+<!-- ════════════ ÁREA DE IMPRESSÃO ════════════ -->
+<div class="print-area" id="print-area"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIGURAÇÃO
+// ══════════════════════════════════════════
+const ETAPAS = [
+  { id: 'triagem',   nome: 'Triagem',              col: 'C', cor: '#52D9A4', bg: '#E1F5EE', textcor: '#085041' },
+  { id: 'medico',    nome: 'Médico',               col: 'D', cor: '#F5A623', bg: '#FAEEDA', textcor: '#633806' },
+  { id: 'medicacao', nome: 'Sala de Medicação',    col: 'E', cor: '#E8684A', bg: '#FAECE7', textcor: '#712B13' },
+  { id: 'alta',      nome: 'Alta / Internação',    col: 'F', cor: '#A67BF5', bg: '#EEEDFE', textcor: '#3C3489' },
+];
+
+function getScriptUrl() {
+  return localStorage.getItem('scriptUrl') || '';
+}
+
+// ══════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// CADASTRO / QR CODE
+// ══════════════════════════════════════════
+let qrInstance = null;
+
+function gerarQR() {
+  const prontuario = document.getElementById('inp-prontuario').value.trim();
+  const nome = document.getElementById('inp-nome').value.trim();
+
+  if (!prontuario || isNaN(prontuario) || Number(prontuario) <= 0) {
+    alert('Informe um número de prontuário válido.');
+    return;
+  }
+  if (!nome) {
+    alert('Informe o nome do paciente.');
+    return;
+  }
+
+  const agora = new Date();
+  const ts = formatarHora(agora);
+  const tsCompleto = agora.toLocaleString('pt-BR');
+
+  // Dados que o QR vai carregar
+  const payload = JSON.stringify({ p: prontuario, n: nome });
+
+  // Gera QR
+  const container = document.getElementById('qr-canvas');
+  container.innerHTML = '';
+  qrInstance = new QRCode(container, {
+    text: payload,
+    width: 148,
+    height: 148,
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+
+  // Preenche info
+  document.getElementById('display-prontuario').textContent = prontuario;
+  document.getElementById('display-nome').textContent = nome;
+  document.getElementById('display-ts').textContent = 'Cadastro: ' + tsCompleto;
+
+  // Envia cadastro para o Sheets
+  registrarEtapa(prontuario, nome, 'Cadastro', ts);
+
+  document.getElementById('qr-result').style.display = 'block';
+  document.getElementById('qr-form').style.marginBottom = '0';
+}
+
+function clearQR() {
+  document.getElementById('qr-result').style.display = 'none';
+}
+
+function novoQR() {
+  document.getElementById('inp-prontuario').value = '';
+  document.getElementById('inp-nome').value = '';
+  document.getElementById('qr-result').style.display = 'none';
+  document.getElementById('inp-prontuario').focus();
+}
+
+function imprimirQR() {
+  const prontuario = document.getElementById('display-prontuario').textContent;
+  const nome = document.getElementById('display-nome').textContent;
+  const ts = document.getElementById('display-ts').textContent;
+  const imgEl = document.querySelector('#qr-canvas img');
+  const imgSrc = imgEl ? imgEl.src : '';
+
+  const printArea = document.getElementById('print-area');
+  printArea.innerHTML = `
+    <div style="font-family:'IBM Plex Sans',sans-serif; padding: 24px; max-width: 400px;">
+      <div style="border-bottom: 2px solid #042C53; padding-bottom: 10px; margin-bottom: 16px;">
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#5F5E5A;">Hospital Heliópolis — Pronto-Atendimento</div>
+      </div>
+      <div style="display:flex; gap:16px; align-items:flex-start;">
+        <img src="${imgSrc}" width="120" height="120" style="border:1px solid #dde1e7; border-radius:6px; padding:4px;" />
+        <div>
+          <div style="font-size:11px; color:#5F5E5A; margin-bottom:2px;">Prontuário</div>
+          <div style="font-size:22px; font-weight:600; font-family:'IBM Plex Mono',monospace; color:#042C53; margin-bottom:6px;">${prontuario}</div>
+          <div style="font-size:16px; font-weight:600; color:#2C2C2A; margin-bottom:4px;">${nome}</div>
+          <div style="font-size:11px; color:#5F5E5A;">${ts}</div>
+        </div>
+      </div>
+      <div style="margin-top:16px; border-top:1px dashed #dde1e7; padding-top:12px;">
+        <div style="font-size:11px; color:#5F5E5A; line-height:1.8;">
+          Etapas: <strong>Triagem · Médico · Medicação · Alta</strong><br>
+          Mantenha este papel durante todo o atendimento.
+        </div>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+// ══════════════════════════════════════════
+// TELAS DE ETAPA
+// ══════════════════════════════════════════
+function buildEtapas() {
+  ETAPAS.forEach(etapa => {
+    const el = document.getElementById('screen-' + etapa.id);
+    el.innerHTML = `
+      <div class="step-header">
+        <div class="step-badge" style="background:${etapa.bg}; color:${etapa.textcor};">
+          <span style="width:8px;height:8px;border-radius:50%;background:${etapa.cor};display:inline-block;"></span>
+          Posto de registro
+        </div>
+        <div class="step-title">${etapa.nome}</div>
+        <div class="step-subtitle">Aproxime o celular do QR Code do paciente</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Leitura de QR Code</div>
+        <div class="scanner-area" id="scanner-${etapa.id}">
+          <video id="video-${etapa.id}" autoplay playsinline muted></video>
+          <div class="scan-overlay">
+            <div class="scan-frame">
+              <div class="scan-line"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:1rem;" onclick="iniciarCamera('${etapa.id}')">
+          Ativar câmera
+        </button>
+        <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="pararCamera('${etapa.id}')">
+          Parar câmera
+        </button>
+      </div>
+
+      <div class="or-divider">ou digitar manualmente</div>
+
+      <div class="card">
+        <label for="manual-pront-${etapa.id}">Número do prontuário</label>
+        <input type="number" id="manual-pront-${etapa.id}" placeholder="Ex: 1234567" min="1">
+        <label for="manual-nome-${etapa.id}">Nome do paciente</label>
+        <input type="text" id="manual-nome-${etapa.id}" placeholder="Ex: Maria Silva">
+        <button class="btn btn-success" onclick="registrarManual('${etapa.id}', '${etapa.nome}')">
+          Registrar horário — ${etapa.nome}
+        </button>
+      </div>
+
+      <div class="feedback-box" id="fb-${etapa.id}">
+        <div class="feedback-title" id="fb-title-${etapa.id}"></div>
+        <div class="feedback-detail" id="fb-detail-${etapa.id}"></div>
+      </div>
+    `;
+  });
+}
+
+// ══════════════════════════════════════════
+// CÂMERA / QR READER
+// ══════════════════════════════════════════
+const streams = {};
+const scanTimers = {};
+
+async function iniciarCamera(etapaId) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    streams[etapaId] = stream;
+    const video = document.getElementById('video-' + etapaId);
+    video.srcObject = stream;
+    video.play();
+    scanQR(etapaId);
+  } catch(e) {
+    mostrarFeedback(etapaId, 'error', 'Câmera indisponível', 'Permita o acesso à câmera nas configurações do navegador, ou use o campo manual abaixo.');
+  }
+}
+
+function pararCamera(etapaId) {
+  if (streams[etapaId]) {
+    streams[etapaId].getTracks().forEach(t => t.stop());
+    delete streams[etapaId];
+  }
+  if (scanTimers[etapaId]) {
+    clearInterval(scanTimers[etapaId]);
+    delete scanTimers[etapaId];
+  }
+}
+
+function scanQR(etapaId) {
+  // Usa BarcodeDetector API (Chrome/Android nativo, sem lib extra)
+  if (!('BarcodeDetector' in window)) {
+    mostrarFeedback(etapaId, 'error', 'Scanner não suportado', 'Seu navegador não suporta leitura de QR nativa. Use o campo manual abaixo, ou tente no Chrome para Android.');
+    return;
+  }
+
+  const detector = new BarcodeDetector({ formats: ['qr_code'] });
+  const video = document.getElementById('video-' + etapaId);
+
+  const etapa = ETAPAS.find(e => e.id === etapaId);
+
+  scanTimers[etapaId] = setInterval(async () => {
+    if (!video.videoWidth) return;
+    try {
+      const codes = await detector.detect(video);
+      if (codes.length > 0) {
+        pararCamera(etapaId);
+        const raw = codes[0].rawValue;
+        let data;
+        try { data = JSON.parse(raw); } catch(_) { data = { p: raw, n: '—' }; }
+        const ts = formatarHora(new Date());
+        registrarEtapa(data.p, data.n, etapa.nome, ts);
+        mostrarFeedback(etapaId, 'success',
+          `${etapa.nome} registrada — ${ts}`,
+          `Prontuário: ${data.p} · ${data.n}`
+        );
+        // Limpa feedback após 6s
+        setTimeout(() => {
+          const fb = document.getElementById('fb-' + etapaId);
+          if (fb) { fb.style.display = 'none'; }
+        }, 6000);
+      }
+    } catch(_) {}
+  }, 300);
+}
+
+// ══════════════════════════════════════════
+// REGISTRO MANUAL
+// ══════════════════════════════════════════
+function registrarManual(etapaId, etapaNome) {
+  const prontuario = document.getElementById('manual-pront-' + etapaId).value.trim();
+  const nome = document.getElementById('manual-nome-' + etapaId).value.trim();
+
+  if (!prontuario || isNaN(prontuario) || Number(prontuario) <= 0) {
+    mostrarFeedback(etapaId, 'error', 'Prontuário inválido', 'Informe um número de prontuário válido.');
+    return;
+  }
+  if (!nome) {
+    mostrarFeedback(etapaId, 'error', 'Nome ausente', 'Informe o nome do paciente.');
+    return;
+  }
+
+  const ts = formatarHora(new Date());
+  registrarEtapa(prontuario, nome, etapaNome, ts);
+  mostrarFeedback(etapaId, 'success',
+    `${etapaNome} registrada — ${ts}`,
+    `Prontuário: ${prontuario} · ${nome}`
+  );
+
+  document.getElementById('manual-pront-' + etapaId).value = '';
+  document.getElementById('manual-nome-' + etapaId).value = '';
+
+  setTimeout(() => {
+    const fb = document.getElementById('fb-' + etapaId);
+    if (fb) fb.style.display = 'none';
+  }, 6000);
+}
+
+// ══════════════════════════════════════════
+// ENVIO AO GOOGLE SHEETS
+// ══════════════════════════════════════════
+function registrarEtapa(prontuario, nome, etapa, horario) {
+  const url = getScriptUrl();
+  if (!url) {
+    console.warn('URL do Apps Script não configurada. Registro local apenas:', { prontuario, nome, etapa, horario });
+    return;
+  }
+
+  const params = new URLSearchParams({ prontuario, nome, etapa, horario });
+
+  fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .catch(err => console.error('Erro ao enviar para Sheets:', err));
+}
+
+// ══════════════════════════════════════════
+// FEEDBACK
+// ══════════════════════════════════════════
+function mostrarFeedback(etapaId, tipo, titulo, detalhe) {
+  const fb = document.getElementById('fb-' + etapaId);
+  const fbTitle = document.getElementById('fb-title-' + etapaId);
+  const fbDetail = document.getElementById('fb-detail-' + etapaId);
+  fb.className = 'feedback-box ' + tipo;
+  fbTitle.textContent = titulo;
+  fbDetail.textContent = detalhe;
+  fb.style.display = 'block';
+  fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+function salvarConfig() {
+  const url = document.getElementById('inp-script-url').value.trim();
+  localStorage.setItem('scriptUrl', url);
+  atualizarStatusConexao();
+  alert('Configuração salva!');
+}
+
+function testarConexao() {
+  const url = getScriptUrl();
+  if (!url) { alert('Configure a URL primeiro.'); return; }
+  const params = new URLSearchParams({ prontuario: 'TESTE', nome: 'TESTE', etapa: 'Teste', horario: formatarHora(new Date()) });
+  fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => alert('Requisição enviada. Verifique se a linha "TESTE" apareceu no Google Sheets.'))
+    .catch(() => alert('Erro de rede. Verifique a URL.'));
+}
+
+function atualizarStatusConexao() {
+  const url = getScriptUrl();
+  const el = document.getElementById('conn-status');
+  if (el) {
+    if (url) {
+      el.className = 'status-indicator ok';
+      el.innerHTML = '<span class="dot"></span> Conectado ao Sheets';
+    } else {
+      el.className = 'status-indicator warn';
+      el.innerHTML = '<span class="dot"></span> URL do Apps Script não configurada';
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function formatarHora(date) {
+  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+buildEtapas();
+atualizarStatusConexao();
+
+// Carrega URL salva no campo de config
+const savedUrl = getScriptUrl();
+if (savedUrl) {
+  const inp = document.getElementById('inp-script-url');
+  if (inp) inp.value = savedUrl;
+}
+</script>
+</body>
+</html>
