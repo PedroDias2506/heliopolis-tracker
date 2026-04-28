@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Heliópolis PA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+  :root {
+    --blue-50:#E6F1FB; --blue-100:#B5D4F4; --blue-600:#185FA5; --blue-800:#0C447C; --blue-900:#042C53;
+    --teal-50:#E1F5EE; --teal-600:#0F6E56; --teal-800:#085041;
+    --green-50:#EAF3DE; --green-600:#3B6D11; --green-800:#27500A;
+    --amber-50:#FAEEDA; --amber-600:#854F0B; --amber-800:#633806;
+    --coral-50:#FAECE7; --coral-600:#993C1D; --coral-800:#712B13;
+    --gray-50:#F1EFE8; --gray-100:#D3D1C7; --gray-600:#5F5E5A; --gray-800:#444441; --gray-900:#2C2C2A;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'IBM Plex Sans',sans-serif; background:#f4f6f9; min-height:100vh; color:var(--gray-900); }
+  nav { background:var(--blue-900); padding:0 2rem; display:flex; align-items:center; height:56px; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
+  .nav-brand { font-size:15px; font-weight:600; color:#fff; letter-spacing:.03em; }
+  .nav-brand span { color:var(--blue-100); font-weight:400; }
+  .screen { padding:2rem; max-width:900px; margin:0 auto; }
+  .card { background:#fff; border-radius:12px; border:.5px solid #dde1e7; padding:1.5rem; margin-bottom:1.25rem; }
+  .card-title { font-size:13px; font-weight:600; color:var(--gray-600); text-transform:uppercase; letter-spacing:.08em; margin-bottom:1.1rem; }
+  label { display:block; font-size:13px; font-weight:500; color:var(--gray-600); margin-bottom:6px; margin-top:14px; }
+  label:first-of-type { margin-top:0; }
+  input[type="text"] { width:100%; height:42px; border:1px solid #dde1e7; border-radius:8px; padding:0 14px; font-family:inherit; font-size:15px; color:var(--gray-900); background:#fafafa; transition:border-color .15s; outline:none; }
+  input:focus { border-color:var(--blue-600); box-shadow:0 0 0 3px rgba(24,95,165,.12); background:#fff; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:0 1.4rem; height:42px; border-radius:8px; font-family:inherit; font-size:14px; font-weight:500; cursor:pointer; border:none; transition:opacity .15s,transform .1s; }
+  .btn:active { transform:scale(.98); }
+  .btn-primary { background:var(--blue-600); color:#fff; }
+  .btn-primary:hover { opacity:.88; }
+  .btn-outline { background:none; border:1px solid #dde1e7; color:var(--gray-600); font-size:13px; height:36px; padding:0 1rem; }
+  .btn-outline:hover { background:var(--gray-50); }
+  /* MÉTRICAS */
+  .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:1.25rem; }
+  .metric-card { background:var(--gray-50); border-radius:10px; padding:1rem; }
+  .metric-label { font-size:12px; color:var(--gray-600); font-weight:500; margin-bottom:4px; }
+  .metric-value { font-size:26px; font-weight:600; color:var(--gray-900); }
+  .metric-sub { font-size:11px; color:var(--gray-600); margin-top:2px; }
+  /* BARRAS */
+  .bar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .bar-label { font-size:13px; color:var(--gray-800); width:160px; flex-shrink:0; }
+  .bar-track { flex:1; height:10px; background:var(--gray-100); border-radius:100px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:100px; transition:width .6s ease; }
+  .bar-time { font-size:13px; color:var(--gray-600); width:70px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; }
+  /* TABELA */
+  .table-wrap { overflow-x:auto; }
+  .dash-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .dash-table th { text-align:left; font-size:11px; font-weight:600; color:var(--gray-600); text-transform:uppercase; letter-spacing:.08em; padding:0 8px 10px; border-bottom:.5px solid #dde1e7; white-space:nowrap; }
+  .dash-table td { padding:10px 8px; border-bottom:.5px solid #f0f0f0; color:var(--gray-800); white-space:nowrap; }
+  .dash-table tr:last-child td { border-bottom:none; }
+  .dash-table tr:hover td { background:var(--gray-50); }
+  .tag { display:inline-block; padding:2px 8px; border-radius:100px; font-size:11px; font-weight:600; }
+  .tag-alta       { background:var(--teal-50);  color:var(--teal-800); }
+  .tag-internacao { background:var(--coral-50); color:var(--coral-800); }
+  .tag-medicacao  { background:var(--amber-50); color:var(--amber-800); }
+  /* GARGALO */
+  .gargalo-box { background:var(--amber-50); border:1px solid #FAC775; border-radius:10px; padding:1.25rem 1.5rem; }
+  .gargalo-title { font-size:16px; font-weight:600; color:var(--amber-800); margin-bottom:4px; }
+  .gargalo-detail { font-size:13px; color:var(--amber-600); }
+  /* FILTROS */
+  .filter-row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+  .filter-row input { width:160px; }
+  /* EMPTY */
+  .empty { text-align:center; padding:2rem; color:var(--gray-600); font-size:14px; }
+  @media(max-width:600px) { .screen{padding:1rem;} nav{padding:0 1rem;} .metrics-grid{grid-template-columns:1fr 1fr;} .bar-label{width:110px;font-size:12px;} }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Heliópolis <span>/ Dashboard — Gestor</span></div>
+</nav>
+
+<div class="screen">
+
+  <!-- FILTROS -->
+  <div class="card">
+    <div class="card-title">Filtrar por período</div>
+    <div class="filter-row">
+      <div>
+        <label for="dt-ini">Data inicial</label>
+        <input type="text" id="dt-ini" placeholder="dd/mm/aaaa">
+      </div>
+      <div>
+        <label for="dt-fim">Data final</label>
+        <input type="text" id="dt-fim" placeholder="dd/mm/aaaa">
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="carregar()">Carregar dados</button>
+      <button class="btn btn-outline" style="margin-top:14px;" onclick="hoje()">Hoje</button>
+    </div>
+    <div id="status-carga" style="font-size:13px;color:var(--gray-600);margin-top:.75rem;"></div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-label">Pacientes no período</div><div class="metric-value" id="m-total">—</div></div>
+    <div class="metric-card"><div class="metric-label">Tempo médio total</div><div class="metric-value" id="m-medio">—</div><div class="metric-sub">cadastro ao desfecho</div></div>
+    <div class="metric-card"><div class="metric-label">Altas</div><div class="metric-value" id="m-altas">—</div></div>
+    <div class="metric-card"><div class="metric-label">Internações</div><div class="metric-value" id="m-intern">—</div></div>
+    <div class="metric-card"><div class="metric-label">Medicação</div><div class="metric-value" id="m-medic">—</div></div>
+    <div class="metric-card"><div class="metric-label">Sem desfecho</div><div class="metric-value" id="m-incomp">—</div><div class="metric-sub">em atendimento</div></div>
+  </div>
+
+  <!-- TEMPOS POR ETAPA -->
+  <div class="card">
+    <div class="card-title">Tempo médio entre etapas</div>
+    <div id="barras"><div class="empty">Carregue os dados para ver os indicadores.</div></div>
+  </div>
+
+  <!-- GARGALO -->
+  <div class="card" id="card-gargalo" style="display:none;">
+    <div class="card-title">Gargalo identificado</div>
+    <div class="gargalo-box">
+      <div class="gargalo-title" id="gargalo-title"></div>
+      <div class="gargalo-detail" id="gargalo-detail"></div>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card">
+    <div class="card-title">Pacientes no período</div>
+    <div class="table-wrap">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Prontuário</th>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Cadastro</th>
+            <th>Triagem</th>
+            <th>Médico</th>
+            <th>Desfecho</th>
+            <th>Tempo total</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"><tr><td colspan="8" class="empty">Carregue os dados acima.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONFIG PLANILHA -->
+  <div class="card">
+    <div class="card-title">Configuração da planilha</div>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:1rem;line-height:1.6;">
+      Para carregar os dados, a planilha precisa estar compartilhada como <strong>"Qualquer pessoa com o link pode ver"</strong>.
+    </p>
+    <label for="inp-sheet-id" style="margin-top:0;">ID da planilha Google Sheets</label>
+    <input type="text" id="inp-sheet-id" placeholder="Ex: 1fwOuvf1PH_zUXVnBLFa-ATCYMxGr3OvV6UZV8-HtU9M">
+    <div style="margin-top:1rem;display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="salvarSheetId()">Salvar</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Colunas: A=Prontuário B=Nome C=Data D=Cadastro E=Triagem F=Médico G=Medicação H=Alta I=Internação
+const COL = { pront:0, nome:1, data:2, cadastro:3, triagem:4, medico:5, medicacao:6, alta:7, internacao:8 };
+let dadosGlobais = [];
+let sheetIdCache = null;
+
+function getSheetId() {
+  if (sheetIdCache) return sheetIdCache;
+  try { sheetIdCache = localStorage.getItem('sheetId') || ''; } catch(e) { sheetIdCache = ''; }
+  return sheetIdCache;
+}
+
+window.onload = () => {
+  const sid = localStorage.getItem('sheetId');
+  if (sid) document.getElementById('inp-sheet-id').value = sid;
+  hoje();
+};
+
+function hoje() {
+  const d = new Date();
+  const fmt = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  document.getElementById('dt-ini').value = fmt;
+  document.getElementById('dt-fim').value = fmt;
+  if (dadosGlobais.length) processar();
+}
+
+function carregar() {
+  let sid = getSheetId();
+  if (!sid) {
+    sid = prompt('Cole o ID da sua planilha Google Sheets:\n(sequência longa na URL entre /d/ e /edit)');
+    if (!sid) return;
+    sheetIdCache = sid.trim();
+    try { localStorage.setItem('sheetId', sheetIdCache); } catch(e) {}
+    document.getElementById('inp-sheet-id').value = sheetIdCache;
+  }
+  document.getElementById('status-carga').textContent = 'Carregando...';
+
+  // Remove callback anterior se existir
+  const old = document.getElementById('gviz-script');
+  if (old) old.remove();
+  if (window.__gvizCallback) delete window.__gvizCallback;
+
+  // Usa JSONP via gviz para evitar bloqueio CORS
+  window.__gvizCallback = function(data) {
+    try {
+      const table = data.table;
+      if (!table || !table.rows) throw new Error('Sem dados na planilha.');
+
+      // Monta linhas ignorando cabeçalho
+      dadosGlobais = table.rows.map(row => {
+        return row.c.map(cell => {
+          if (!cell || cell.v === null || cell.v === undefined) return '';
+          // Datas vêm como "Date(2026,3,28)" — converte para dd/mm/aaaa hh:mm:ss
+          if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+            const parts = cell.v.replace('Date(','').replace(')','').split(',');
+            const a=parts[0], m=String(Number(parts[1])+1).padStart(2,'0'), d=String(parts[2]).padStart(2,'0');
+            const h=String(parts[3]||0).padStart(2,'0'), min=String(parts[4]||0).padStart(2,'0'), s=String(parts[5]||0).padStart(2,'0');
+            return `${d}/${m}/${a} ${h}:${min}:${s}`;
+          }
+          return String(cell.v);
+        });
+      }).filter(r => r[COL.pront] && r[COL.pront] !== 'TESTE' && r[COL.pront] !== 'Prontuário');
+
+      processar();
+      document.getElementById('status-carga').textContent = `${dadosGlobais.length} registros carregados com sucesso.`;
+    } catch(err) {
+      document.getElementById('status-carga').textContent = 'Erro ao processar dados: ' + err.message;
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = 'gviz-script';
+  script.src = `https://docs.google.com/spreadsheets/d/${sid.trim()}/gviz/tq?sheet=PA&tqx=out:json&callback=__gvizCallback`;
+  script.onerror = () => {
+    document.getElementById('status-carga').textContent = 'Erro: Falha ao acessar a planilha. Verifique se está compartilhada como "Qualquer pessoa com o link pode ver".';
+  };
+  document.body.appendChild(script);
+}
+
+function salvarSheetId() {
+  const sid = document.getElementById('inp-sheet-id').value.trim();
+  sheetIdCache = sid;
+  try { localStorage.setItem('sheetId', sid); } catch(e) {}
+  alert('ID salvo! Clique em "Carregar dados" para atualizar.');
+}
+
+function parseCSV(csv) {
+  const linhas = csv.trim().split('\n');
+  return linhas.slice(1).map(l => l.split(',').map(c => c.replace(/^"|"$/g,'').trim())).filter(r => r[COL.pront] && r[COL.pront] !== 'TESTE');
+}
+
+function parseDT(str) {
+  if (!str) return null;
+  const [datePart, timePart] = str.split(' ');
+  if (!datePart || !timePart) return null;
+  const [d,m,a] = datePart.split('/');
+  const [h,min,s] = timePart.split(':');
+  if (!a||!m||!d) return null;
+  return new Date(a, m-1, d, h||0, min||0, s||0);
+}
+
+function diffMin(a, b) {
+  if (!a || !b) return null;
+  const diff = (b - a) / 60000;
+  return diff < 0 ? null : diff;
+}
+
+function fmtMin(min) {
+  if (min === null || isNaN(min)) return '—';
+  if (min < 60) return `${Math.round(min)} min`;
+  return `${Math.floor(min/60)}h ${Math.round(min%60)}min`;
+}
+
+function filtroPorData(dados) {
+  const ini = document.getElementById('dt-ini').value.trim();
+  const fim = document.getElementById('dt-fim').value.trim();
+  if (!ini && !fim) return dados;
+  const conv = s => { const p=s.split('/'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s; };
+  return dados.filter(r => {
+    const d = r[COL.data];
+    if (!d) return false;
+    if (ini && d < conv(ini)) return false;
+    if (fim && d > conv(fim)) return false;
+    return true;
+  });
+}
+
+function processar() {
+  const dados = filtroPorData(dadosGlobais);
+  if (!dados.length) {
+    zerarMetricas();
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="8" class="empty">Nenhum paciente no período selecionado.</td></tr>';
+    return;
+  }
+
+  let altas=0, internacoes=0, medicacoes=0, incompletos=0;
+  const tempos = { triagem:[], medico:[], medicacao:[], alta:[], internacao:[], total:[] };
+  const linhas = [];
+
+  dados.forEach(row => {
+    const dtC = parseDT(row[COL.cadastro]);
+    const dtT = parseDT(row[COL.triagem]);
+    const dtM = parseDT(row[COL.medico]);
+    const dtMc= parseDT(row[COL.medicacao]);
+    const dtA = parseDT(row[COL.alta]);
+    const dtI = parseDT(row[COL.internacao]);
+
+    let desfecho='—', dtDesfecho=null;
+    if      (dtA)  { desfecho='Alta';       dtDesfecho=dtA;  altas++; }
+    else if (dtI)  { desfecho='Internação'; dtDesfecho=dtI;  internacoes++; }
+    else if (dtMc) { desfecho='Medicação';  dtDesfecho=dtMc; medicacoes++; }
+    else incompletos++;
+
+    const tT  = diffMin(dtC,  dtT);
+    const tM  = diffMin(dtT,  dtM);
+    const tMc = diffMin(dtM,  dtMc);
+    const tA  = diffMin(dtM,  dtA);
+    const tI  = diffMin(dtM,  dtI);
+    const tot = diffMin(dtC,  dtDesfecho);
+
+    if (tT  !== null) tempos.triagem.push(tT);
+    if (tM  !== null) tempos.medico.push(tM);
+    if (tMc !== null) tempos.medicacao.push(tMc);
+    if (tA  !== null) tempos.alta.push(tA);
+    if (tI  !== null) tempos.internacao.push(tI);
+    if (tot !== null) tempos.total.push(tot);
+
+    linhas.push({ pront:row[COL.pront], nome:row[COL.nome], data:row[COL.data],
+      cadastro: row[COL.cadastro]?.split(' ')[1]||'—',
+      triagem:  row[COL.triagem]?.split(' ')[1]||'—',
+      medico:   row[COL.medico]?.split(' ')[1]||'—',
+      desfecho, tot });
+  });
+
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+
+  document.getElementById('m-total').textContent = dados.length;
+  document.getElementById('m-medio').textContent = fmtMin(avg(tempos.total));
+  document.getElementById('m-altas').textContent = altas;
+  document.getElementById('m-intern').textContent = internacoes;
+  document.getElementById('m-medic').textContent  = medicacoes;
+  document.getElementById('m-incomp').textContent = incompletos;
+
+  // Barras
+  const etapasBarra = [
+    { nome:'Cadastro → Triagem', val: avg(tempos.triagem),   n: tempos.triagem.length },
+    { nome:'Triagem → Médico',   val: avg(tempos.medico),    n: tempos.medico.length },
+    { nome:'Médico → Medicação', val: avg(tempos.medicacao), n: tempos.medicacao.length },
+    { nome:'Médico → Alta',      val: avg(tempos.alta),      n: tempos.alta.length },
+    { nome:'Médico → Internação',val: avg(tempos.internacao),n: tempos.internacao.length },
+  ].filter(e => e.n > 0);
+
+  const maxVal = Math.max(...etapasBarra.map(e=>e.val||0), 1);
+  let gargalo = null;
+  const cores = ['#E8684A','#F5A623','#52D9A4'];
+
+  const barrasEl = document.getElementById('barras');
+  if (!etapasBarra.length) {
+    barrasEl.innerHTML = '<div class="empty">Dados insuficientes para calcular os tempos entre etapas.</div>';
+  } else {
+    barrasEl.innerHTML = etapasBarra.map(e => {
+      const pct = Math.round((e.val/maxVal)*100);
+      const cor = pct>75 ? cores[0] : pct>40 ? cores[1] : cores[2];
+      if (!gargalo || e.val > gargalo.val) gargalo = e;
+      return `<div class="bar-row">
+        <div class="bar-label">${e.nome}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${cor};"></div></div>
+        <div class="bar-time">${fmtMin(e.val)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Gargalo
+  if (gargalo && gargalo.val !== null) {
+    document.getElementById('card-gargalo').style.display = 'block';
+    document.getElementById('gargalo-title').textContent = `${gargalo.nome}: média de ${fmtMin(gargalo.val)}`;
+    document.getElementById('gargalo-detail').textContent = `Esta é a etapa que mais contribui para o tempo total de atendimento no período selecionado. Recomenda-se investigar o fluxo nesta etapa.`;
+  } else {
+    document.getElementById('card-gargalo').style.display = 'none';
+  }
+
+  // Tabela
+  document.getElementById('tbody').innerHTML = linhas.map(r => {
+    const tagClass = r.desfecho==='Alta'?'tag-alta':r.desfecho==='Internação'?'tag-internacao':r.desfecho==='Medicação'?'tag-medicacao':'';
+    const tagEl = r.desfecho!=='—' ? `<span class="tag ${tagClass}">${r.desfecho}</span>` : '—';
+    return `<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;">${r.pront}</td>
+      <td>${r.nome}</td>
+      <td>${r.data||'—'}</td>
+      <td>${r.cadastro}</td>
+      <td>${r.triagem}</td>
+      <td>${r.medico}</td>
+      <td>${tagEl}</td>
+      <td>${fmtMin(r.tot)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function zerarMetricas() {
+  ['m-total','m-medio','m-altas','m-intern','m-medic','m-incomp'].forEach(id => document.getElementById(id).textContent='—');
+  document.getElementById('barras').innerHTML = '<div class="empty">Carregue os dados para ver os indicadores.</div>';
+  document.getElementById('card-gargalo').style.display = 'none';
+}
+</script>
+</body>
+</html>
