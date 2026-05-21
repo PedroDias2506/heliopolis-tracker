@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Alta — Heliópolis PA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SHARED CSS — inline em cada HTML
+   ============================================================ */
+:root {
+  --nav-bg: #0b2545;
+  --nav-fg: #ffffff;
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --text: #1a2238;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04);
+
+  /* badges por etapa */
+  --b-triagem: #0891b2;
+  --b-cadastro: #7c3aed;
+  --b-medico: #1d4ed8;
+  --b-exame: #d97706;
+  --b-interconsulta: #db2777;
+  --b-medicacao: #16a34a;
+  --b-internacao: #6366f1;
+  --b-alta: #059669;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.nav {
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.nav-brand {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+}
+.nav-sep {
+  opacity: 0.5;
+  margin: 0 4px;
+}
+.nav-page {
+  font-weight: 400;
+  opacity: 0.92;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  margin-left: auto;
+}
+
+.container {
+  max-width: 560px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.card p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+input[type="text"], input[type="tel"], input[type="number"] {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  background: white;
+}
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.15);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .12s, transform .05s;
+  width: 100%;
+  margin-top: 12px;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { filter: brightness(0.92); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-secondary { background: #e5e7eb; color: var(--text); }
+.btn-secondary:hover { background: #d1d5db; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.msg {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.msg-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.msg-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.msg-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.msg-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+#qrcode {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+#qrcode > * { max-width: 100%; }
+
+#reader {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+#reader video { width: 100%; display: block; }
+
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1; }
+
+.timestamp {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.config-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 12px;
+}
+.config-link a { color: var(--muted); text-decoration: underline; }
+
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.action-grid .btn { margin-top: 0; }
+
+.patient-info {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+.patient-info strong { display: block; margin-bottom: 4px; }
+
+@media print {
+  .nav, .btn, .config-link, #reader, .action-grid { display: none !important; }
+  body { background: white; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+}
+
+</style>
+</head>
+<body>
+<header class="nav">
+  <span class="nav-brand">Heliópolis</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-page">Alta</span>
+  <span class="badge" style="background:#059669">Alta</span>
+</header>
+<main class="container">
+
+
+  <div id="scanner-wrap" style="display:none; width:100%; max-width:360px; margin:12px auto; border-radius:8px; overflow:hidden; background:#000;">
+  </div>
+
+
+<div class="card">
+  <h2>Alta do Paciente</h2>
+  <p>Leia o QR Code do paciente para registrar a alta e encerrar o atendimento.</p>
+
+  <div id="status-box" style="
+    display:flex; flex-direction:column; align-items:center;
+    gap:16px; padding:24px 0;
+  ">
+    <div id="status-icon" style="font-size:48px">🏠</div>
+    <div id="status-label" style="font-size:15px; color:var(--muted); text-align:center">
+      Aguardando leitura do QR Code
+    </div>
+  </div>
+
+  <button class="btn btn-success" id="btn-alta" style="background:#059669">
+    📷 Registrar Alta
+  </button>
+  <button class="btn btn-secondary" id="btn-cancelar" style="display:none">
+    Cancelar leitura
+  </button>
+  <div id="msg" class="msg" style="display:none"></div>
+</div>
+
+  <div class="config-link">
+    <a href="#" onclick="openConfigModal();return false;">Configurar URL do Apps Script</a>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+/* ============================================================
+   SHARED JS — inline em cada HTML
+   ============================================================ */
+
+const APP_KEY = 'heliopolis_apps_script_url';
+const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyRMcrIyxMV_f72y3OACXu2EnAwJg5PRkM0X-PTbtroFT_BBWOKfJUFcRRbeihOoJXN_A/exec';
+
+function getApiUrl() {
+  return localStorage.getItem(APP_KEY) || DEFAULT_URL;
+}
+function setApiUrl(u) {
+  localStorage.setItem(APP_KEY, u);
+}
+
+function formatCpf(raw) {
+  const d = String(raw || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length !== 11) return d;
+  return d.substr(0,3) + '.' + d.substr(3,3) + '.' + d.substr(6,3) + '-' + d.substr(9,2);
+}
+
+function onlyDigits(s) {
+  return String(s || '').replace(/\D/g, '');
+}
+
+function validCpf(s) {
+  return onlyDigits(s).length === 11;
+}
+
+// Apps Script blocks CORS preflight; use no-cors + form-encoded
+// OU usar text/plain pra evitar preflight. Vamos com URL params via GET-friendly POST.
+async function api(action, params) {
+  const url = getApiUrl();
+  const body = new URLSearchParams();
+  body.set('action', action);
+  Object.keys(params || {}).forEach(k => {
+    if (params[k] !== undefined && params[k] !== null) body.set(k, params[k]);
+  });
+  const res = await fetch(url, {
+    method: 'POST',
+    body: body
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+function showMsg(el, type, text) {
+  el.className = 'msg msg-' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+function clearMsg(el) {
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+// ============================================================
+// QR SCANNER (ZXing)
+// ============================================================
+let _zxingReader = null;
+let _scanActive = false;
+
+async function startScan(videoEl, onResult) {
+  if (_scanActive) return;
+  _scanActive = true;
+  const codeReader = new ZXing.BrowserMultiFormatReader();
+  _zxingReader = codeReader;
+  try {
+    const devices = await codeReader.listVideoInputDevices();
+    // Prefere câmera traseira
+    let deviceId = null;
+    for (const d of devices) {
+      if (/back|rear|environment|traseira/i.test(d.label)) { deviceId = d.deviceId; break; }
+    }
+    if (!deviceId && devices.length > 0) deviceId = devices[devices.length - 1].deviceId;
+
+    await codeReader.decodeFromVideoDevice(deviceId, videoEl, (result, err) => {
+      if (result) {
+        const txt = result.getText();
+        stopScan();
+        onResult(txt);
+      }
+    });
+  } catch (e) {
+    _scanActive = false;
+    throw e;
+  }
+}
+
+function stopScan() {
+  if (_zxingReader) {
+    try { _zxingReader.reset(); } catch(e) {}
+    _zxingReader = null;
+  }
+  _scanActive = false;
+}
+
+// CPF mask para input
+function attachCpfMask(input) {
+  input.addEventListener('input', () => {
+    const d = onlyDigits(input.value).slice(0, 11);
+    if (d.length <= 3) input.value = d;
+    else if (d.length <= 6) input.value = d.substr(0,3) + '.' + d.substr(3);
+    else if (d.length <= 9) input.value = d.substr(0,3) + '.' + d.substr(3,3) + '.' + d.substr(6);
+    else input.value = d.substr(0,3) + '.' + d.substr(3,3) + '.' + d.substr(6,3) + '-' + d.substr(9);
+  });
+}
+
+// Modal de configuração da URL do Apps Script
+function openConfigModal() {
+  const cur = getApiUrl();
+  const v = prompt('URL do Apps Script:', cur);
+  if (v && v.trim()) {
+    setApiUrl(v.trim());
+    alert('URL salva.');
+  }
+}
+
+</script>
+<script>
+
+
+// ── Scanner helpers ──────────────────────────────────────
+let videoEl = null;
+
+function openScanner(onCpf) {
+  const wrap = document.getElementById('scanner-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = '<video id="qr-video" playsinline></video>';
+  videoEl = document.getElementById('qr-video');
+  startScan(videoEl, txt => {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    const cpf = onlyDigits(txt);
+    if (!validCpf(cpf)) {
+      alert('QR inválido. Tente novamente.');
+      return;
+    }
+    onCpf(cpf);
+  }).catch(e => {
+    wrap.style.display = 'none';
+    alert('Erro ao acessar câmera: ' + e.message);
+  });
+}
+
+function closeScanner() {
+  stopScan();
+  const wrap = document.getElementById('scanner-wrap');
+  wrap.style.display = 'none';
+  wrap.innerHTML = '';
+}
+
+
+const btnAlta   = document.getElementById('btn-alta');
+const btnCancel = document.getElementById('btn-cancelar');
+const msgEl     = document.getElementById('msg');
+const statusIcon = document.getElementById('status-icon');
+const statusLbl  = document.getElementById('status-label');
+
+btnAlta.addEventListener('click', () => {
+  clearMsg(msgEl);
+  btnAlta.disabled = true;
+  btnCancel.style.display = 'block';
+  statusIcon.textContent = '📷';
+  statusLbl.textContent  = 'Aponte para o QR Code do paciente...';
+
+  openScanner(async cpf => {
+    btnCancel.style.display = 'none';
+    statusIcon.textContent = '⏳';
+    statusLbl.textContent  = 'Registrando alta...';
+    try {
+      const r = await api('alta', { cpf });
+      if (!r.ok && !r.duplicate) {
+        showMsg(msgEl, 'error', r.error);
+        btnAlta.disabled = false;
+        statusIcon.textContent = '🏠';
+        statusLbl.textContent  = 'Aguardando leitura do QR Code';
+        return;
+      }
+      statusIcon.textContent = '✅';
+      statusLbl.textContent  = 'Alta registrada com sucesso';
+      showMsg(msgEl, 'success', 'Alta: ' + (r.timestamp || '✓') + ' — CPF: ' + formatCpf(cpf));
+      setTimeout(() => {
+        btnAlta.disabled = false;
+        statusIcon.textContent = '🏠';
+        statusLbl.textContent  = 'Aguardando leitura do QR Code';
+        clearMsg(msgEl);
+      }, 3000);
+    } catch(e) {
+      showMsg(msgEl, 'error', 'Erro: ' + e.message);
+      btnAlta.disabled = false;
+      statusIcon.textContent = '🏠';
+      statusLbl.textContent  = 'Aguardando leitura do QR Code';
+    }
+  });
+});
+
+btnCancel.addEventListener('click', () => {
+  closeScanner();
+  btnCancel.style.display = 'none';
+  btnAlta.disabled = false;
+  statusIcon.textContent = '🏠';
+  statusLbl.textContent  = 'Aguardando leitura do QR Code';
+});
+
+</script>
+</body>
+</html>
